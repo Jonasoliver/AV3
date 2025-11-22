@@ -12,7 +12,17 @@ export function relatorioRoutes(report: ReportGenerator, aeronaveService: Aerona
       if (!cliente || !dataEntrega) return res.status(400).json({ error: 'Cliente e dataEntrega obrigatórios' });
       const texto = await report.gerarRelatorio(req.params.codigo, cliente, dataEntrega);
       const filePath = await report.salvarEmArquivo(req.params.codigo, texto);
-      res.json({ filePath, conteudo: texto });
+      res.json({ path: filePath, content: texto });
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  router.get('/:codigo/download', requireRole(NivelPermissao.ADMINISTRADOR), async (req, res) => {
+    try {
+      const filePath = report.getFilePath(req.params.codigo);
+      if (!require('fs').existsSync(filePath)) {
+        return res.status(404).json({ error: 'Relatório não encontrado. Gere o relatório primeiro.' });
+      }
+      res.download(filePath, `relatorio_${req.params.codigo}.txt`);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
   return router;

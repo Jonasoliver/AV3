@@ -41,17 +41,17 @@ export function aeronaveRoutes(service: AeronaveService) {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  router.patch('/pecas/:id/status', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
+  router.get('/:codigo/pecas', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
+    const lista = await service.listarPecas(req.params.codigo);
+    res.json(lista);
+  });
+
+  router.patch('/:codigo/pecas/:id/status', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
     try {
       const { status } = req.body;
       await service.atualizarStatusPeca(parseInt(req.params.id, 10), status as StatusPeca);
       res.json({ ok: true });
     } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
-
-  router.get('/:codigo/pecas', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
-    const lista = await service.listarPecas(req.params.codigo);
-    res.json(lista);
   });
 
   // Etapas

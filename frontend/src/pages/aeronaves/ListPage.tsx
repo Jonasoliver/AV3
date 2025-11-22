@@ -3,6 +3,7 @@ import { http } from '../../api/client'
 import { PageHeader } from '@components/PageHeader'
 import { Table } from '@components/Table'
 import { EmptyState } from '@components/EmptyState'
+import { Link } from 'react-router-dom'
 
 interface Aeronave { codigo:string; modelo:string; tipo:string; capacidade?:number; alcance?:number }
 
@@ -24,7 +25,7 @@ export default function AeronavesListPage(){
       {loading && <p className="muted">Carregando...</p>}
       {!loading && filtered.length===0 && <EmptyState title="Nenhuma aeronave" />}
       {!loading && filtered.length>0 && (
-        <Table headers={["Código","Modelo","Tipo","Capacidade","Alcance"]}>
+        <Table headers={["Código","Modelo","Tipo","Capacidade","Alcance","Ações"]}>
           {filtered.map(a => (
             <tr key={a.codigo}>
               <td>{a.codigo}</td>
@@ -32,6 +33,12 @@ export default function AeronavesListPage(){
               <td>{a.tipo}</td>
               <td>{a.capacidade ?? '-'}</td>
               <td>{a.alcance ?? '-'}</td>
+              <td>
+                <Link to={`/aeronaves/${a.codigo}/pecas`} style={{ marginRight: '10px' }}>Peças</Link>
+                <Link to={`/aeronaves/${a.codigo}/etapas`} style={{ marginRight: '10px' }}>Etapas</Link>
+                <Link to={`/aeronaves/${a.codigo}/testes`} style={{ marginRight: '10px' }}>Testes</Link>
+                <Link to={`/aeronaves/${a.codigo}/relatorio`}>Relatório</Link>
+              </td>
             </tr>
           ))}
         </Table>

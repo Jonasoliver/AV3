@@ -26,3 +26,37 @@ export type Aeronave = {
   capacidade?: number
   alcance?: number
 }
+
+export type Funcionario = {
+  id: string
+  nome: string
+  telefone?: string
+  endereco?: string
+  usuario: string
+  nivel_permissao: 'ADMINISTRADOR' | 'ENGENHEIRO' | 'OPERADOR'
+}
+
+export type Peca = {
+  id: number
+  aeronave_codigo: string
+  nome: string
+  tipo: 'NACIONAL' | 'IMPORTADA'
+  fornecedor?: string
+  status: 'EM_PRODUCAO' | 'EM_TRANSPORTE' | 'PRONTA'
+}
+
+export type Etapa = {
+  id: number
+  aeronave_codigo: string
+  nome: string
+  prazo?: string
+  status: 'PENDENTE' | 'ANDAMENTO' | 'CONCLUIDA'
+  ordem: number
+}
+
+export type Teste = {
+  id: number
+  aeronave_codigo: string
+  tipo: 'ELETRICO' | 'HIDRAULICO' | 'AERODINAMICO'
+  resultado: 'APROVADO' | 'REPROVADO'
+}

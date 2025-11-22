@@ -52,4 +52,8 @@ export class ReportGenerator {
     fs.writeFileSync(filePath, conteudo, 'utf8');
     return filePath;
   }
+
+  getFilePath(codigo: string) {
+    return path.resolve(process.cwd(), 'reports', `relatorio_${codigo}.txt`);
+  }
 }
