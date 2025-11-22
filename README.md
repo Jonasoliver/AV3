@@ -1,6 +1,6 @@
 # Sistema de Gestão de Produção de Aeronaves - AeroCode
 
-Sistema completo para gerenciar o ciclo de produção e validação de aeronaves, incluindo cadastro de aeronaves, peças, etapas produtivas, testes e geração de relatórios. Desenvolvido com TypeScript, Node.js, Express, MySQL e React.
+Sistema completo para gerenciar o ciclo de produção e validação de aeronaves, incluindo cadastro de aeronaves, peças, etapas produtivas, testes, relatórios e métricas de qualidade. Desenvolvido com TypeScript, Node.js, Express, MySQL (Prisma ORM) e React.
 
 ## 📋 Funcionalidades
 
@@ -39,12 +39,22 @@ Sistema completo para gerenciar o ciclo de produção e validação de aeronaves
 - Download em formato .txt
 - Inclui: especificações, peças, etapas, testes e contadores
 
+### 🆕 Relatório de Qualidade
+- **Coleta automática de métricas de performance**
+- **Três métricas principais:**
+  - Latência de rede
+  - Tempo de processamento no servidor
+  - Tempo de resposta total
+- **Cenários de teste:** 1, 5 e 10 usuários concorrentes
+- **Visualização com gráficos** (Chart.js)
+- **Metodologia documentada**
+
 ## 🚀 Tecnologias
 
 **Backend:**
 - Node.js + TypeScript
 - Express.js
-- MySQL (mysql2/promise)
+- MySQL com **Prisma ORM v5.22.0**
 - JWT (jsonwebtoken)
 - bcrypt
 
@@ -53,6 +63,7 @@ Sistema completo para gerenciar o ciclo de produção e validação de aeronaves
 - React Router
 - Axios
 - Vite
+- Chart.js + React-Chartjs-2
 
 ## 📦 Pré-requisitos
 
@@ -70,33 +81,134 @@ cd AV3
 
 ### 2. Configure o MySQL
 
-Certifique-se de que o MySQL está rodando. Anote:
-- Usuário (ex: `root`)
-- Senha
-- Porta (padrão: `3306`)
+Certifique-se de que o MySQL está rodando na porta **3306** com suas credenciais.
 
-### 3. Crie o banco de dados e tabelas
+### 3. Crie o banco de dados
 
-**Opção A - Usar MySQL CLI:**
+Execute o script SQL para criar o banco e todas as tabelas:
+
 ```powershell
-# Se o mysql estiver no PATH
-mysql -u root -p < setup_database.sql
+# Usando MySQL CLI (substitua SUA_SENHA pela sua senha do MySQL)
+mysql -u root -pSUA_SENHA < schema.sql
 
-# Caso contrário, use o caminho completo
-& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p < setup_database.sql
+# OU usando o caminho completo do MySQL
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -pSUA_SENHA < schema.sql
 ```
 
-**Opção B - Usar MySQL Workbench ou outro cliente:**
-Execute o arquivo `setup_database.sql` no seu cliente MySQL.
+**Ou use MySQL Workbench:**
+1. Abra o arquivo `schema.sql`
+2. Execute todo o script
+3. Verifique se o banco `aeronaves_db` foi criado
 
 ### 4. Configure as variáveis de ambiente
 
-Crie o arquivo `.env` na raiz do projeto:
+Crie o arquivo `.env` na raiz do projeto baseado no exemplo:
+
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Edite o arquivo `.env` com suas credenciais:
+**Edite o arquivo `.env` com suas credenciais do MySQL:**
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=SUA_SENHA_AQUI
+DB_DATABASE=aeronaves_db
+DATABASE_URL="mysql://root:SUA_SENHA_AQUI@127.0.0.1:3306/aeronaves_db"
+JWT_SECRET=chave_super_secreta_jwt_aeronaves_2024
+auth_bootstrap_admin_user=admin
+auth_bootstrap_admin_pass=admin123
+```
+
+**⚠️ Importante:** 
+- Substitua `SUA_SENHA_AQUI` pela senha do seu MySQL
+
+**⚠️ Importante:** Se sua senha do MySQL for diferente, altere `DB_PASSWORD` e `DATABASE_URL`.
+
+### 5. Instale as dependências
+
+**Backend:**
+```powershell
+npm install
+```
+
+**Frontend:**
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+### 6. Inicie os servidores
+
+**IMPORTANTE:** Os servidores rodam em terminais separados com comandos diferentes.
+
+**Backend (Terminal 1):**
+```powershell
+npm run dev
+# Aguarde: "Servidor iniciado na porta 3000"
+# Aguarde: "✓ Tabela de métricas verificada/criada"
+```
+
+**Frontend (Terminal 2):**
+```powershell
+cd frontend
+npm run dev
+# Aguarde: "Local: http://localhost:5173/"
+```
+
+## 🔑 Primeiro Acesso
+
+O sistema cria automaticamente um usuário administrador na primeira execução:
+
+- **URL:** http://localhost:5173
+- **Usuário:** `admin`
+- **Senha:** `admin123`
+
+## 📖 Uso do Sistema
+
+### Fluxo de Trabalho Típico
+
+1. **ADMIN/ENGENHEIRO:** Cadastra uma aeronave (menu "Nova Aeronave")
+2. **ADMIN/ENGENHEIRO:** Adiciona peças necessárias
+3. **ADMIN/ENGENHEIRO:** Cria etapas de produção em ordem
+4. **ADMIN/ENGENHEIRO:** Atribui funcionários às etapas
+5. **ADMIN/ENGENHEIRO:** Inicia e finaliza etapas sequencialmente
+6. **ADMIN/ENGENHEIRO:** Atualiza status das peças
+7. **OPERADOR:** Registra testes realizados
+8. **ENGENHEIRO:** Gera relatório final com resumo completo
+
+### 🆕 Gerando Relatório de Qualidade
+
+1. **Execute o script de testes de carga** (gera métricas):
+```powershell
+node loadTest.js
+```
+
+2. **Acesse o relatório:**
+   - Faça login no sistema
+   - Clique em **"Qualidade"** no menu superior
+   - Visualize os 3 gráficos e a metodologia
+
+3. **Limpar métricas** (opcional):
+   - Use o botão "Limpar Métricas" na página
+
+## 🛠️ Scripts Disponíveis
+
+**Backend:**
+- `npm run dev` - Modo desenvolvimento (ts-node-dev com hot-reload)
+- `npm run build` - Compilar TypeScript
+- `npm start` - Rodar versão compilada
+- `node loadTest.js` - Executar testes de carga (gera métricas)
+
+**Frontend:**
+- `npm run dev` - Modo desenvolvimento (Vite)
+- `npm run build` - Build de produção
+- `npm run preview` - Preview do build
+
+## 🗂️ Estrutura do Projeto
 ```env
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -173,58 +285,70 @@ Acesse: http://localhost:5173
 
 ## 🗂️ Estrutura do Projeto
 
+## 🗂️ Estrutura do Projeto
+
 ```
 AV3/
-├── src/                    # Backend
-│   ├── config/            # Configurações
-│   ├── db/                # Conexão com banco
-│   ├── enums/             # Enumerações TypeScript
-│   ├── middleware/        # Auth e permissões
-│   ├── repositories/      # Camada de dados
-│   ├── routes/            # Rotas da API
-│   ├── services/          # Lógica de negócio
-│   ├── utils/             # Utilitários
-│   ├── app.ts             # Configuração Express
-│   └── server.ts          # Entrada da aplicação
-├── frontend/              # Frontend React
+├── src/                      # Backend
+│   ├── config/              # Configurações (env)
+│   ├── db/                  # Prisma Client e migrações
+│   ├── enums/               # Enumerações TypeScript
+│   ├── middleware/          # Auth, permissões e métricas
+│   ├── repositories/        # Camada de dados (Prisma)
+│   ├── routes/              # Rotas da API
+│   ├── services/            # Lógica de negócio
+│   ├── utils/               # Utilitários e gerador de relatórios
+│   ├── app.ts               # Configuração Express
+│   └── server.ts            # Entrada da aplicação
+├── frontend/                # Frontend React
 │   ├── src/
-│   │   ├── api/          # Cliente HTTP
-│   │   ├── app/          # Auth e Router
-│   │   ├── components/   # Componentes reutilizáveis
-│   │   ├── pages/        # Páginas da aplicação
-│   │   └── styles/       # CSS global
+│   │   ├── api/            # Cliente HTTP (Axios)
+│   │   ├── app/            # Auth Context e Router
+│   │   ├── components/     # Componentes reutilizáveis
+│   │   ├── pages/          # Páginas da aplicação
+│   │   │   ├── aeronaves/
+│   │   │   ├── funcionarios/
+│   │   │   ├── pecas/
+│   │   │   ├── etapas/
+│   │   │   ├── testes/
+│   │   │   └── relatorios/ # Relatórios normais e de qualidade
+│   │   └── styles/         # CSS global
 │   └── index.html
-├── reports/               # Relatórios gerados
-├── schema.sql            # Schema original
-├── setup_database.sql    # Script completo de setup
-├── .env.example          # Exemplo de variáveis
+├── prisma/                  # Prisma ORM
+│   └── schema.prisma       # Schema do banco
+├── reports/                 # Relatórios gerados (.txt)
+├── schema.sql              # Script SQL inicial
+├── loadTest.js             # Script de testes de carga
+├── .env                    # Variáveis de ambiente
+├── RELATORIO_QUALIDADE.md  # Documentação de métricas
 └── README.md
 ```
 
 ## 🌐 API Endpoints
 
 ### Autenticação
-- `POST /auth/login` - Login
+- `POST /auth/login` - Login (retorna JWT)
 
 ### Aeronaves
-- `POST /aeronaves` - Cadastrar (ADMIN)
-- `GET /aeronaves` - Listar
+- `POST /aeronaves` - Cadastrar (ADMIN/ENGENHEIRO)
+- `GET /aeronaves` - Listar todas
 - `GET /aeronaves/:codigo` - Obter detalhes
 
 ### Peças
-- `POST /aeronaves/:codigo/pecas` - Adicionar peça
+- `POST /aeronaves/:codigo/pecas` - Adicionar peça (ADMIN/ENGENHEIRO)
 - `GET /aeronaves/:codigo/pecas` - Listar peças
-- `PATCH /aeronaves/:codigo/pecas/:id/status` - Atualizar status
+- `PATCH /aeronaves/:codigo/pecas/:id/status` - Atualizar status (ADMIN/ENGENHEIRO)
 
 ### Etapas
-- `POST /aeronaves/:codigo/etapas` - Criar etapa
+- `POST /aeronaves/:codigo/etapas` - Criar etapa (ADMIN/ENGENHEIRO)
 - `GET /aeronaves/:codigo/etapas` - Listar etapas
-- `POST /aeronaves/:codigo/etapas/:id/iniciar` - Iniciar etapa
-- `POST /aeronaves/:codigo/etapas/:id/finalizar` - Finalizar etapa
-- `POST /aeronaves/:codigo/etapas/:id/funcionarios` - Atribuir funcionário
+- `POST /aeronaves/:codigo/etapas/:id/iniciar` - Iniciar etapa (ADMIN/ENGENHEIRO)
+- `POST /aeronaves/:codigo/etapas/:id/finalizar` - Finalizar etapa (ADMIN/ENGENHEIRO)
+- `POST /aeronaves/:codigo/etapas/:id/funcionarios` - Atribuir funcionário (ADMIN/ENGENHEIRO)
+- `GET /aeronaves/:codigo/etapas/:id/funcionarios` - Listar funcionários da etapa
 
 ### Testes
-- `POST /aeronaves/:codigo/testes` - Registrar teste
+- `POST /aeronaves/:codigo/testes` - Registrar teste (Todos)
 - `GET /aeronaves/:codigo/testes` - Listar testes
 
 ### Funcionários
@@ -232,32 +356,94 @@ AV3/
 - `GET /funcionarios` - Listar
 
 ### Relatórios
-- `POST /relatorios/:codigo` - Gerar relatório (ADMIN)
+- `POST /relatorios/:codigo` - Gerar relatório (ENGENHEIRO)
 - `GET /relatorios/:codigo/download` - Baixar relatório
+
+### 🆕 Métricas de Qualidade
+- `GET /metricas` - Obter métricas agregadas (requer autenticação)
+- `GET /metricas/detalhadas` - Métricas individuais (últimas 1000)
+- `DELETE /metricas` - Limpar métricas (requer autenticação)
+
+## 🎯 Controle de Acesso (Níveis de Permissão)
+
+| Funcionalidade | ADMINISTRADOR | ENGENHEIRO | OPERADOR |
+|----------------|---------------|------------|----------|
+| Cadastrar Funcionários | ✅ | ❌ | ❌ |
+| Cadastrar Aeronaves | ✅ | ✅ | ❌ |
+| Adicionar Peças | ✅ | ✅ | ❌ |
+| Criar/Gerenciar Etapas | ✅ | ✅ | ❌ |
+| Registrar Testes | ✅ | ✅ | ✅ |
+| Gerar Relatórios | ✅ | ✅ | ❌ |
+| Ver Métricas de Qualidade | ✅ | ✅ | ✅ |
+
+## 📊 Sobre o Relatório de Qualidade
+
+O sistema coleta automaticamente **3 métricas de performance**:
+
+1. **Latência de Rede** - Tempo de ida e volta da requisição
+2. **Tempo de Processamento** - Tempo que o servidor leva para processar
+3. **Tempo de Resposta Total** - Soma da latência + processamento
+
+**Como funciona:**
+- Um middleware intercepta todas as requisições
+- Timestamps são capturados em 3 pontos do ciclo de vida
+- Métricas são salvas automaticamente na tabela `metricas`
+- O script `loadTest.js` simula cenários de 1, 5 e 10 usuários
+- A página `/qualidade` exibe gráficos e metodologia completa
+
+**Para mais detalhes:** Veja [RELATORIO_QUALIDADE.md](RELATORIO_QUALIDADE.md)
 
 ## 🐛 Solução de Problemas
 
-**Erro ao conectar no MySQL:**
-- Verifique se o MySQL está rodando
-- Confira as credenciais no arquivo `.env`
+### Erro ao conectar no MySQL
+- Verifique se o MySQL está rodando: `services.msc` → MySQL80
+- Confirme as credenciais no arquivo `.env`
 - Teste a conexão com MySQL Workbench
 
-**Porta já em uso:**
-- Backend (3000): Altere em `src/config/env.ts`
-- Frontend (5173): Altere em `frontend/vite.config.ts`
-
-**Erro "Cannot find module":**
+### Backend não inicia - "EADDRINUSE: address already in use :::3000"
 ```powershell
-# Limpe e reinstale
+# Encerrar processo na porta 3000
+$port = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($port) { Stop-Process -Id $port.OwningProcess -Force }
+
+# Reiniciar backend
+npm run dev
+```
+
+### Frontend não compila - Erros de importação
+```powershell
+# Limpar e reinstalar dependências
+cd frontend
 rm -r node_modules
 rm package-lock.json
 npm install
+cd ..
 ```
+
+### "Nenhuma métrica disponível" na página de Qualidade
+```powershell
+# Execute o script de testes de carga primeiro
+node loadTest.js
+```
+
+### Prisma Client não atualizado
+```powershell
+# Regenerar Prisma Client
+npx prisma generate
+```
+
+## 📝 Notas de Desenvolvimento
+
+- **ORM:** Migrado de mysql2 direto para **Prisma ORM v5.22.0**
+- **Middleware de métricas:** Captura automática em todas as requisições
+- **Geração de IDs:** Funcionários (F###) e Aeronaves (AER###) são gerados automaticamente
+- **Validação de etapas:** Sistema garante ordem sequencial obrigatória
+- **Relatórios:** Salvos em `/reports` com timestamp único
 
 ## 📄 Licença
 
-Projeto de uso interno / estudo.
+Projeto acadêmico / uso interno.
 
 ## 👥 Desenvolvedor
 
-Sistema desenvolvido para gestão completa do ciclo de produção de aeronaves.
+Sistema de gestão completa do ciclo de produção de aeronaves com monitoramento de qualidade.
