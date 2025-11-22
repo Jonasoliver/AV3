@@ -12,7 +12,7 @@ import { ResultadoTeste } from '../enums/ResultadoTeste';
 export function aeronaveRoutes(service: AeronaveService) {
   const router = Router();
 
-  router.post('/', requireRole(NivelPermissao.ADMINISTRADOR), async (req, res) => {
+  router.post('/', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
     try {
       const { modelo, tipo, capacidade, alcance } = req.body;
       if (!modelo || !tipo) return res.status(400).json({ error: 'Modelo e tipo são obrigatórios' });
@@ -86,7 +86,7 @@ export function aeronaveRoutes(service: AeronaveService) {
   });
 
   // Testes
-  router.post('/:codigo/testes', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
+  router.post('/:codigo/testes', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
     try { const { tipo, resultado } = req.body; const t = await service.registrarTeste(req.params.codigo, { tipo: tipo as TipoTeste, resultado: resultado as ResultadoTeste }); res.status(201).json(t); } catch(e: any){ res.status(400).json({ error: e.message }); }
   });
 

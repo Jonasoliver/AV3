@@ -6,7 +6,7 @@ import { NivelPermissao } from '../enums/NivelPermissao';
 
 export function relatorioRoutes(report: ReportGenerator, aeronaveService: AeronaveService) {
   const router = Router();
-  router.post('/:codigo', requireRole(NivelPermissao.ADMINISTRADOR), async (req, res) => {
+  router.post('/:codigo', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
     try {
       const { dataEntrega } = req.body;
       if (!dataEntrega) return res.status(400).json({ error: 'dataEntrega obrigatória' });
@@ -16,7 +16,7 @@ export function relatorioRoutes(report: ReportGenerator, aeronaveService: Aerona
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  router.get('/:codigo/download', requireRole(NivelPermissao.ADMINISTRADOR), async (req, res) => {
+  router.get('/:codigo/download', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
     try {
       const filePath = report.getFilePath(req.params.codigo);
       if (!require('fs').existsSync(filePath)) {

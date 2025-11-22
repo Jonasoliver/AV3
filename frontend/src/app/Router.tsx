@@ -20,7 +20,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="brand">Aeronaves</div>
         <nav className="nav">
           {session && <NavLink to="/aeronaves">Aeronaves</NavLink>}
-          {session && session.nivel === 'ADMINISTRADOR' && <NavLink to="/aeronaves/nova">Nova Aeronave</NavLink>}
+          {session && (session.nivel === 'ADMINISTRADOR' || session.nivel === 'ENGENHEIRO') && <NavLink to="/aeronaves/nova">Nova Aeronave</NavLink>}
           {session && <NavLink to="/funcionarios">Funcionários</NavLink>}
           {session && session.nivel === 'ADMINISTRADOR' && <NavLink to="/funcionarios/novo">Novo Funcionário</NavLink>}
         </nav>
@@ -43,11 +43,11 @@ export const AppRouter: React.FC = () => (
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<Protected><Layout><AeronavesListPage /></Layout></Protected>} />
       <Route path="/aeronaves" element={<Protected><Layout><AeronavesListPage /></Layout></Protected>} />
-      <Route path="/aeronaves/nova" element={<Protected allow={['ADMINISTRADOR']}><Layout><AeronavesNewPage /></Layout></Protected>} />
+      <Route path="/aeronaves/nova" element={<Protected allow={['ADMINISTRADOR', 'ENGENHEIRO']}><Layout><AeronavesNewPage /></Layout></Protected>} />
       <Route path="/aeronaves/:codigo/pecas" element={<Protected allow={['ADMINISTRADOR', 'ENGENHEIRO']}><Layout><PecasPage /></Layout></Protected>} />
       <Route path="/aeronaves/:codigo/etapas" element={<Protected allow={['ADMINISTRADOR', 'ENGENHEIRO']}><Layout><EtapasPage /></Layout></Protected>} />
-      <Route path="/aeronaves/:codigo/testes" element={<Protected allow={['ADMINISTRADOR', 'ENGENHEIRO']}><Layout><TestesPage /></Layout></Protected>} />
-      <Route path="/aeronaves/:codigo/relatorio" element={<Protected allow={['ADMINISTRADOR']}><Layout><RelatorioPage /></Layout></Protected>} />
+      <Route path="/aeronaves/:codigo/testes" element={<Protected><Layout><TestesPage /></Layout></Protected>} />
+      <Route path="/aeronaves/:codigo/relatorio" element={<Protected allow={['ADMINISTRADOR', 'ENGENHEIRO']}><Layout><RelatorioPage /></Layout></Protected>} />
       <Route path="/funcionarios" element={<Protected><Layout><FuncionariosListPage /></Layout></Protected>} />
       <Route path="/funcionarios/novo" element={<Protected allow={['ADMINISTRADOR']}><Layout><FuncionariosNewPage /></Layout></Protected>} />
     </Routes>

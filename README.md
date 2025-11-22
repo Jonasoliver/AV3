@@ -148,19 +148,6 @@ Acesse: http://localhost:5173
 
 ## 📖 Uso do Sistema
 
-### Permissões por Nível
-
-| Funcionalidade | ADMINISTRADOR | ENGENHEIRO | OPERADOR |
-|----------------|---------------|------------|----------|
-| Cadastrar Aeronaves | ✅ | ❌ | ❌ |
-| Visualizar Aeronaves | ✅ | ✅ | ✅ |
-| Cadastrar Funcionários | ✅ | ❌ | ❌ |
-| Visualizar Funcionários | ✅ | ✅ | ✅ |
-| Gerenciar Peças | ✅ | ✅ | ❌ |
-| Gerenciar Etapas | ✅ | ✅ | ❌ |
-| Registrar Testes | ✅ | ✅ | ❌ |
-| Gerar Relatórios | ✅ | ❌ | ❌ |
-
 ### Fluxo de Trabalho Típico
 
 1. **ADMIN:** Cadastra uma aeronave
