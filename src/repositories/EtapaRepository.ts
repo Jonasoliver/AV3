@@ -1,60 +1,115 @@
-import { Pool, RowDataPacket } from 'mysql2/promise';
+import { prisma } from '../db/prisma';
 import { StatusEtapa } from '../enums/StatusEtapa';
 
 export interface Etapa {
   id?: number;
   aeronave_codigo: string;
   nome: string;
-  prazo?: string;
+  prazo?: string | null;
   status: StatusEtapa;
   ordem: number;
 }
 
-type EtapaRow = Etapa & RowDataPacket;
-type MaxOrdemRow = { max_ordem: number } & RowDataPacket;
-type FuncEtapaRow = { funcionario_id: string } & RowDataPacket;
-
 export class EtapaRepository {
-  constructor(private pool: Pool) {}
-
   async add(data: Omit<Etapa,'id'>): Promise<Etapa> {
-    const { aeronave_codigo, nome, prazo, status, ordem } = data;
-    const [result] = await this.pool.query<any>("INSERT INTO etapas (aeronave_codigo,nome,prazo,status,ordem) VALUES (?,?,?,?,?)", [aeronave_codigo,nome,prazo||null,status,ordem]);
-    return { ...data, id: result.insertId };
+    const etapa = await prisma.etapa.create({
+      data: {
+        aeronaveCodigo: data.aeronave_codigo,
+        nome: data.nome,
+        prazo: data.prazo || null,
+        status: data.status,
+        ordem: data.ordem
+      }
+    });
+    return {
+      id: etapa.id,
+      aeronave_codigo: etapa.aeronaveCodigo,
+      nome: etapa.nome,
+      prazo: etapa.prazo,
+      status: etapa.status as StatusEtapa,
+      ordem: etapa.ordem
+    };
   }
 
   async listByAeronave(codigo: string): Promise<Etapa[]> {
-    const [rows] = await this.pool.query<EtapaRow[]>("SELECT * FROM etapas WHERE aeronave_codigo = ? ORDER BY ordem ASC", [codigo]);
-    return rows as Etapa[];
+    const etapas = await prisma.etapa.findMany({
+      where: { aeronaveCodigo: codigo },
+      orderBy: { ordem: 'asc' }
+    });
+    return etapas.map(e => ({
+      id: e.id,
+      aeronave_codigo: e.aeronaveCodigo,
+      nome: e.nome,
+      prazo: e.prazo,
+      status: e.status as StatusEtapa,
+      ordem: e.ordem
+    }));
   }
 
   async findById(id: number): Promise<Etapa | null> {
-    const [rows] = await this.pool.query<EtapaRow[]>("SELECT * FROM etapas WHERE id = ?", [id]);
-    return (rows[0] as Etapa) || null;
+    const etapa = await prisma.etapa.findUnique({
+      where: { id }
+    });
+    if (!etapa) return null;
+    return {
+      id: etapa.id,
+      aeronave_codigo: etapa.aeronaveCodigo,
+      nome: etapa.nome,
+      prazo: etapa.prazo,
+      status: etapa.status as StatusEtapa,
+      ordem: etapa.ordem
+    };
   }
 
   async updateStatus(id: number, status: StatusEtapa): Promise<void> {
-    await this.pool.query("UPDATE etapas SET status = ? WHERE id = ?", [status, id]);
+    await prisma.etapa.update({
+      where: { id },
+      data: { status }
+    });
   }
 
   async getPrevious(etapa: Etapa): Promise<Etapa | null> {
     if (etapa.ordem <= 1) return null;
-    const [rows] = await this.pool.query<EtapaRow[]>("SELECT * FROM etapas WHERE aeronave_codigo = ? AND ordem = ?", [etapa.aeronave_codigo, etapa.ordem - 1]);
-    return (rows[0] as Etapa) || null;
+    const previous = await prisma.etapa.findFirst({
+      where: {
+        aeronaveCodigo: etapa.aeronave_codigo,
+        ordem: etapa.ordem - 1
+      }
+    });
+    if (!previous) return null;
+    return {
+      id: previous.id,
+      aeronave_codigo: previous.aeronaveCodigo,
+      nome: previous.nome,
+      prazo: previous.prazo,
+      status: previous.status as StatusEtapa,
+      ordem: previous.ordem
+    };
   }
 
   async nextOrderIndex(aeronave_codigo: string): Promise<number> {
-    const [rows] = await this.pool.query<MaxOrdemRow[]>("SELECT COALESCE(MAX(ordem),0) as max_ordem FROM etapas WHERE aeronave_codigo = ?", [aeronave_codigo]);
-    const max = rows[0].max_ordem;
+    const result = await prisma.etapa.aggregate({
+      where: { aeronaveCodigo: aeronave_codigo },
+      _max: { ordem: true }
+    });
+    const max = result._max.ordem || 0;
     return max + 1;
   }
 
   async addFuncionario(etapa_id: number, funcionario_id: string): Promise<void> {
-    await this.pool.query("INSERT IGNORE INTO etapas_funcionarios (etapa_id, funcionario_id) VALUES (?,?)", [etapa_id, funcionario_id]);
+    await prisma.etapasFuncionarios.create({
+      data: {
+        etapaId: etapa_id,
+        funcionarioId: funcionario_id
+      }
+    });
   }
 
   async listFuncionarios(etapa_id: number): Promise<{ funcionario_id: string }[]> {
-    const [rows] = await this.pool.query<FuncEtapaRow[]>("SELECT funcionario_id FROM etapas_funcionarios WHERE etapa_id = ?", [etapa_id]);
-    return rows as { funcionario_id: string }[];
+    const relations = await prisma.etapasFuncionarios.findMany({
+      where: { etapaId: etapa_id },
+      select: { funcionarioId: true }
+    });
+    return relations.map(r => ({ funcionario_id: r.funcionarioId }));
   }
 }

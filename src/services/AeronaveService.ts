@@ -3,7 +3,6 @@ import { PecaRepository } from '../repositories/PecaRepository';
 import { EtapaRepository } from '../repositories/EtapaRepository';
 import { TesteRepository } from '../repositories/TesteRepository';
 import { generateAeronaveCode } from '../utils/codeGeneration';
-import { Pool } from 'mysql2/promise';
 import { TipoAeronave } from '../enums/TipoAeronave';
 import { TipoPeca } from '../enums/TipoPeca';
 import { StatusPeca } from '../enums/StatusPeca';
@@ -16,12 +15,11 @@ export class AeronaveService {
     private aeronaveRepo: AeronaveRepository,
     private pecaRepo: PecaRepository,
     private etapaRepo: EtapaRepository,
-    private testeRepo: TesteRepository,
-    private pool: Pool
+    private testeRepo: TesteRepository
   ) {}
 
   async cadastrarAeronave(data: { modelo: string; tipo: TipoAeronave; capacidade?: number; alcance?: number; }) {
-    const codigo = await generateAeronaveCode(this.pool);
+    const codigo = await generateAeronaveCode();
     return this.aeronaveRepo.create({ codigo, ...data });
   }
 

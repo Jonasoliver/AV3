@@ -1,30 +1,58 @@
-import { Pool } from 'mysql2/promise';
+import { prisma } from '../db/prisma';
 import { TipoAeronave } from '../enums/TipoAeronave';
 
 export interface Aeronave {
   codigo: string;
   modelo: string;
   tipo: TipoAeronave;
-  capacidade?: number;
-  alcance?: number;
+  capacidade?: number | null;
+  alcance?: number | null;
 }
 
 export class AeronaveRepository {
-  constructor(private pool: Pool) {}
-
   async create(data: Aeronave): Promise<Aeronave> {
-    const { codigo, modelo, tipo, capacidade, alcance } = data;
-    await this.pool.query("INSERT INTO aeronaves (codigo,modelo,tipo,capacidade,alcance) VALUES (?,?,?,?,?)", [codigo,modelo,tipo,capacidade||null,alcance||null]);
-    return data;
+    const aeronave = await prisma.aeronave.create({
+      data: {
+        codigo: data.codigo,
+        modelo: data.modelo,
+        tipo: data.tipo,
+        capacidade: data.capacidade || null,
+        alcance: data.alcance || null
+      }
+    });
+    return {
+      codigo: aeronave.codigo,
+      modelo: aeronave.modelo,
+      tipo: aeronave.tipo as TipoAeronave,
+      capacidade: aeronave.capacidade,
+      alcance: aeronave.alcance
+    };
   }
 
   async findByCodigo(codigo: string): Promise<Aeronave | null> {
-    const [rows] = await this.pool.query<Aeronave[]>("SELECT * FROM aeronaves WHERE codigo = ?", [codigo]);
-    return rows[0] || null;
+    const aeronave = await prisma.aeronave.findUnique({
+      where: { codigo }
+    });
+    if (!aeronave) return null;
+    return {
+      codigo: aeronave.codigo,
+      modelo: aeronave.modelo,
+      tipo: aeronave.tipo as TipoAeronave,
+      capacidade: aeronave.capacidade,
+      alcance: aeronave.alcance
+    };
   }
 
   async list(): Promise<Aeronave[]> {
-    const [rows] = await this.pool.query<Aeronave[]>("SELECT * FROM aeronaves ORDER BY codigo ASC");
-    return rows;
+    const aeronaves = await prisma.aeronave.findMany({
+      orderBy: { codigo: 'asc' }
+    });
+    return aeronaves.map(a => ({
+      codigo: a.codigo,
+      modelo: a.modelo,
+      tipo: a.tipo as TipoAeronave,
+      capacidade: a.capacidade,
+      alcance: a.alcance
+    }));
   }
 }

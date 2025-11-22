@@ -1,4 +1,4 @@
-import { Pool } from 'mysql2/promise';
+import { prisma } from '../db/prisma';
 import { StatusPeca } from '../enums/StatusPeca';
 import { TipoPeca } from '../enums/TipoPeca';
 
@@ -7,30 +7,65 @@ export interface Peca {
   aeronave_codigo: string;
   nome: string;
   tipo: TipoPeca;
-  fornecedor?: string;
+  fornecedor?: string | null;
   status: StatusPeca;
 }
 
 export class PecaRepository {
-  constructor(private pool: Pool) {}
-
   async add(data: Omit<Peca,'id'>): Promise<Peca> {
-    const { aeronave_codigo, nome, tipo, fornecedor, status } = data;
-    const [result] = await this.pool.query<any>("INSERT INTO pecas (aeronave_codigo,nome,tipo,fornecedor,status) VALUES (?,?,?,?,?)", [aeronave_codigo,nome,tipo,fornecedor||null,status]);
-    return { ...data, id: result.insertId };
+    const peca = await prisma.peca.create({
+      data: {
+        aeronaveCodigo: data.aeronave_codigo,
+        nome: data.nome,
+        tipo: data.tipo,
+        fornecedor: data.fornecedor || null,
+        status: data.status
+      }
+    });
+    return {
+      id: peca.id,
+      aeronave_codigo: peca.aeronaveCodigo,
+      nome: peca.nome,
+      tipo: peca.tipo as TipoPeca,
+      fornecedor: peca.fornecedor,
+      status: peca.status as StatusPeca
+    };
   }
 
   async updateStatus(id: number, status: StatusPeca): Promise<void> {
-    await this.pool.query("UPDATE pecas SET status = ? WHERE id = ?", [status, id]);
+    await prisma.peca.update({
+      where: { id },
+      data: { status }
+    });
   }
 
   async listByAeronave(codigo: string): Promise<Peca[]> {
-    const [rows] = await this.pool.query<Peca[]>("SELECT * FROM pecas WHERE aeronave_codigo = ? ORDER BY id ASC", [codigo]);
-    return rows;
+    const pecas = await prisma.peca.findMany({
+      where: { aeronaveCodigo: codigo },
+      orderBy: { id: 'asc' }
+    });
+    return pecas.map(p => ({
+      id: p.id,
+      aeronave_codigo: p.aeronaveCodigo,
+      nome: p.nome,
+      tipo: p.tipo as TipoPeca,
+      fornecedor: p.fornecedor,
+      status: p.status as StatusPeca
+    }));
   }
 
   async findById(id: number): Promise<Peca | null> {
-    const [rows] = await this.pool.query<Peca[]>("SELECT * FROM pecas WHERE id = ?", [id]);
-    return rows[0] || null;
+    const peca = await prisma.peca.findUnique({
+      where: { id }
+    });
+    if (!peca) return null;
+    return {
+      id: peca.id,
+      aeronave_codigo: peca.aeronaveCodigo,
+      nome: peca.nome,
+      tipo: peca.tipo as TipoPeca,
+      fornecedor: peca.fornecedor,
+      status: peca.status as StatusPeca
+    };
   }
 }

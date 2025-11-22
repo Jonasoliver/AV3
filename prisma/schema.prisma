@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Funcionario {
+  id              String   @id @db.VarChar(8)
+  nome            String   @db.VarChar(120)
+  telefone        String?  @db.VarChar(40)
+  endereco        String?  @db.VarChar(255)
+  usuario         String   @unique @db.VarChar(60)
+  senhaHash       String   @map("senha_hash") @db.VarChar(255)
+  nivelPermissao  String   @map("nivel_permissao") @db.VarChar(50)
+  
+  etapas          EtapasFuncionarios[]
+
+  @@map("funcionarios")
+}
+
+model Aeronave {
+  codigo      String   @id @db.VarChar(8)
+  modelo      String   @db.VarChar(120)
+  tipo        String   @db.VarChar(50)
+  capacidade  Int?
+  alcance     Int?
+  
+  pecas       Peca[]
+  etapas      Etapa[]
+  testes      Teste[]
+
+  @@map("aeronaves")
+}
+
+model Peca {
+  id              Int      @id @default(autoincrement())
+  aeronaveCodigo  String   @map("aeronave_codigo") @db.VarChar(8)
+  nome            String   @db.VarChar(120)
+  tipo            String   @db.VarChar(50)
+  fornecedor      String?  @db.VarChar(120)
+  status          String   @db.VarChar(50)
+  
+  aeronave        Aeronave @relation(fields: [aeronaveCodigo], references: [codigo], onDelete: Cascade)
+
+  @@map("pecas")
+}
+
+model Etapa {
+  id              Int      @id @default(autoincrement())
+  aeronaveCodigo  String   @map("aeronave_codigo") @db.VarChar(8)
+  nome            String   @db.VarChar(120)
+  prazo           String?  @db.VarChar(80)
+  status          String   @db.VarChar(50)
+  ordem           Int
+  
+  aeronave        Aeronave @relation(fields: [aeronaveCodigo], references: [codigo], onDelete: Cascade)
+  funcionarios    EtapasFuncionarios[]
+
+  @@unique([aeronaveCodigo, ordem], name: "unique_ordem")
+  @@map("etapas")
+}
+
+model EtapasFuncionarios {
+  etapaId        Int      @map("etapa_id")
+  funcionarioId  String   @map("funcionario_id") @db.VarChar(8)
+  
+  etapa          Etapa       @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+  funcionario    Funcionario @relation(fields: [funcionarioId], references: [id], onDelete: Cascade)
+
+  @@id([etapaId, funcionarioId])
+  @@map("etapas_funcionarios")
+}
+
+model Teste {
+  id              Int      @id @default(autoincrement())
+  aeronaveCodigo  String   @map("aeronave_codigo") @db.VarChar(8)
+  tipo            String   @db.VarChar(50)
+  resultado       String   @db.VarChar(50)
+  
+  aeronave        Aeronave @relation(fields: [aeronaveCodigo], references: [codigo], onDelete: Cascade)
+
+  @@map("testes")
+}
+
+model Metrica {
+  id                    Int      @id @default(autoincrement())
+  endpoint              String   @db.VarChar(255)
+  metodo                String   @db.VarChar(10)
+  latenciaMs            Float    @map("latencia_ms")
+  tempoProcessamentoMs  Float    @map("tempo_processamento_ms")
+  tempoRespostaMs       Float    @map("tempo_resposta_ms")
+  usuariosConcorrentes  Int      @map("usuarios_concorrentes") @default(1)
+  timestamp             DateTime @default(now())
+
+  @@map("metricas")
+}
