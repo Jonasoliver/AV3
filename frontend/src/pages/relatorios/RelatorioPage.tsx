@@ -56,6 +56,7 @@ export default function RelatorioPage() {
       <PageHeader title={`Gerar Relatório - Aeronave ${codigo}`} />
       
       <div className="form">
+        <h3>Informações do Relatório</h3>
         <div className="form-group">
           <label>Cliente *</label>
           <input
@@ -75,30 +76,26 @@ export default function RelatorioPage() {
           />
         </div>
         <button className="btn" onClick={gerarRelatorio}>
-          Gerar Relatório
+          Gerar Prévia
         </button>
         {downloadUrl && (
           <button className="btn primary" onClick={baixarRelatorio} style={{ marginLeft: '10px' }}>
-            📥 Baixar Relatório
+            📥 Baixar .txt
           </button>
         )}
         {msg && <div className="message">{msg}</div>}
       </div>
 
-      {relatorio && (
-        <div style={{ marginTop: '30px' }}>
-          <h3>Relatório Gerado</h3>
-          <pre style={{
-            background: '#f5f5f5',
-            padding: '20px',
-            borderRadius: '5px',
-            overflow: 'auto',
-            whiteSpace: 'pre-wrap'
-          }}>
-            {relatorio}
-          </pre>
+      <div className="card">
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 600 }}>Pré-visualização do Relatório</h3>
+        <div className="preview-terminal">
+          {relatorio ? (
+            relatorio
+          ) : (
+            <span className="placeholder">Pré-visualização do relatório aparecerá aqui...</span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
