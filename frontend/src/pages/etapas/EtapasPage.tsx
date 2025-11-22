@@ -59,7 +59,7 @@ export default function EtapasPage() {
 
   async function iniciarEtapa(id: number) {
     try {
-      await http.post(`/etapas/${id}/iniciar`)
+      await http.post(`/aeronaves/${codigo}/etapas/${id}/iniciar`)
       setMsg('Etapa iniciada')
       await carregar()
     } catch (e: any) {
@@ -69,7 +69,7 @@ export default function EtapasPage() {
 
   async function finalizarEtapa(id: number) {
     try {
-      await http.post(`/etapas/${id}/finalizar`)
+      await http.post(`/aeronaves/${codigo}/etapas/${id}/finalizar`)
       setMsg('Etapa finalizada')
       await carregar()
     } catch (e: any) {
@@ -83,7 +83,7 @@ export default function EtapasPage() {
       return
     }
     try {
-      await http.post(`/etapas/${selectedEtapa}/funcionarios`, {
+      await http.post(`/aeronaves/${codigo}/etapas/${selectedEtapa}/funcionarios`, {
         funcionario_id: selectedFuncionarioId
       })
       setMsg('Funcionário atribuído à etapa')

@@ -63,25 +63,25 @@ export function aeronaveRoutes(service: AeronaveService) {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  router.post('/etapas/:id/iniciar', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
-    try { await service.iniciarEtapa(parseInt(req.params.id,10)); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
-  });
-
-  router.post('/etapas/:id/finalizar', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
-    try { await service.finalizarEtapa(parseInt(req.params.id,10)); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
-  });
-
-  router.post('/etapas/:id/funcionarios', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
-    try { const { funcionario_id } = req.body; await service.associarFuncionario(parseInt(req.params.id,10), funcionario_id); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
-  });
-
-  router.get('/etapas/:id/funcionarios', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
-    const lista = await service.listarFuncionariosEtapa(parseInt(req.params.id,10));
+  router.get('/:codigo/etapas', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
+    const lista = await service.listarEtapas(req.params.codigo);
     res.json(lista);
   });
 
-  router.get('/:codigo/etapas', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
-    const lista = await service.listarEtapas(req.params.codigo);
+  router.post('/:codigo/etapas/:id/iniciar', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
+    try { await service.iniciarEtapa(parseInt(req.params.id,10)); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
+  });
+
+  router.post('/:codigo/etapas/:id/finalizar', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
+    try { await service.finalizarEtapa(parseInt(req.params.id,10)); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
+  });
+
+  router.post('/:codigo/etapas/:id/funcionarios', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO), async (req, res) => {
+    try { const { funcionario_id } = req.body; await service.associarFuncionario(parseInt(req.params.id,10), funcionario_id); res.json({ ok: true }); } catch(e: any){ res.status(400).json({ error: e.message }); }
+  });
+
+  router.get('/:codigo/etapas/:id/funcionarios', requireRole(NivelPermissao.ADMINISTRADOR, NivelPermissao.ENGENHEIRO, NivelPermissao.OPERADOR), async (req, res) => {
+    const lista = await service.listarFuncionariosEtapa(parseInt(req.params.id,10));
     res.json(lista);
   });
 

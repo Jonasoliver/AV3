@@ -14,7 +14,7 @@ export class ReportGenerator {
     private testeRepo: TesteRepository
   ) {}
 
-  async gerarRelatorio(codigo: string, cliente: string, dataEntrega: string): Promise<string> {
+  async gerarRelatorio(codigo: string, dataEntrega: string): Promise<string> {
     const aeronave = await this.aeronaveRepo.findByCodigo(codigo);
     if (!aeronave) throw new Error('Aeronave não encontrada');
     const pecas = await this.pecaRepo.listByAeronave(codigo);
@@ -38,7 +38,7 @@ export class ReportGenerator {
     linhas.push('          RELATÓRIO AEROCODE - PRODUÇÃO DE AERONAVES       ');
     linhas.push('═══════════════════════════════════════════════════════════');
     linhas.push('');
-    linhas.push(`Cliente: ${cliente}`);
+    linhas.push(`Aeronave: ${aeronave.modelo}`);
     linhas.push(`Data de Entrega: ${dataEntrega}`);
     linhas.push('');
     linhas.push('───────────────────────────────────────────────────────────');

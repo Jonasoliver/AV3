@@ -5,7 +5,6 @@ import { PageHeader } from '../../components/PageHeader'
 
 export default function RelatorioPage() {
   const { codigo } = useParams<{ codigo: string }>()
-  const [cliente, setCliente] = useState('')
   const [dataEntrega, setDataEntrega] = useState('')
   const [relatorio, setRelatorio] = useState('')
   const [msg, setMsg] = useState('')
@@ -16,13 +15,12 @@ export default function RelatorioPage() {
     setMsg('')
     setRelatorio('')
     setDownloadUrl('')
-    if (!cliente || !dataEntrega) {
-      setMsg('Preencha cliente e data de entrega')
+    if (!dataEntrega) {
+      setMsg('Preencha a data de entrega')
       return
     }
     try {
       const res = await http.post(`/relatorios/${codigo}`, {
-        cliente,
         dataEntrega
       })
       setMsg(`Relatório gerado: ${res.data.path}`)
@@ -57,15 +55,6 @@ export default function RelatorioPage() {
       
       <div className="form">
         <h3>Informações do Relatório</h3>
-        <div className="form-group">
-          <label>Cliente *</label>
-          <input
-            type="text"
-            value={cliente}
-            onChange={(e) => setCliente(e.target.value)}
-            placeholder="Nome do cliente"
-          />
-        </div>
         <div className="form-group">
           <label>Data de Entrega *</label>
           <input

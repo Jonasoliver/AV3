@@ -8,9 +8,9 @@ export function relatorioRoutes(report: ReportGenerator, aeronaveService: Aerona
   const router = Router();
   router.post('/:codigo', requireRole(NivelPermissao.ADMINISTRADOR), async (req, res) => {
     try {
-      const { cliente, dataEntrega } = req.body;
-      if (!cliente || !dataEntrega) return res.status(400).json({ error: 'Cliente e dataEntrega obrigatórios' });
-      const texto = await report.gerarRelatorio(req.params.codigo, cliente, dataEntrega);
+      const { dataEntrega } = req.body;
+      if (!dataEntrega) return res.status(400).json({ error: 'dataEntrega obrigatória' });
+      const texto = await report.gerarRelatorio(req.params.codigo, dataEntrega);
       const filePath = await report.salvarEmArquivo(req.params.codigo, texto);
       res.json({ path: filePath, content: texto });
     } catch (e: any) { res.status(400).json({ error: e.message }); }
