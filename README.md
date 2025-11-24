@@ -83,22 +83,48 @@ cd AV3
 
 Certifique-se de que o MySQL está rodando na porta **3306** com suas credenciais.
 
-### 3. Crie o banco de dados
 
-Execute o script SQL para criar o banco e todas as tabelas:
+### 3. Crie o banco de dados vazio
 
-```powershell
-# Usando MySQL CLI (substitua SUA_SENHA pela sua senha do MySQL)
-mysql -u root -pSUA_SENHA < schema.sql
+No MySQL, crie apenas o banco de dados vazio (sem tabelas):
 
-# OU usando o caminho completo do MySQL
-& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -pSUA_SENHA < schema.sql
+```sql
+CREATE DATABASE aeronaves_db;
 ```
 
-**Ou use MySQL Workbench:**
-1. Abra o arquivo `schema.sql`
-2. Execute todo o script
-3. Verifique se o banco `aeronaves_db` foi criado
+Você pode fazer isso pelo MySQL Workbench, DBeaver, ou via terminal:
+
+```powershell
+mysql -u root -pSUA_SENHA -e "CREATE DATABASE IF NOT EXISTS aeronaves_db;"
+```
+
+### 4. Crie as tabelas automaticamente (recomendado)
+
+Com o banco de dados vazio criado, rode o comando abaixo para criar todas as tabelas automaticamente usando as migrations do Prisma:
+
+```powershell
+npx prisma migrate deploy
+```
+
+Se for a primeira vez rodando o projeto, ou se não houver migrations, rode:
+
+```powershell
+npx prisma migrate dev --name init
+```
+
+**Agora as tabelas serão criadas automaticamente!**
+
+---
+
+#### (Opção alternativa) Criar tabelas manualmente
+
+Se preferir, você pode criar as tabelas manualmente executando o script SQL:
+
+```powershell
+mysql -u root -pSUA_SENHA < schema.sql
+```
+
+Ou pelo MySQL Workbench, abrindo o arquivo `schema.sql` e executando o script.
 
 ### 4. Configure as variáveis de ambiente
 
